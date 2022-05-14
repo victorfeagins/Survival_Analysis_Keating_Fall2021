@@ -1,0 +1,335 @@
+---
+title: "Survival Final Practice"
+author: "Victor Feagins"
+date: "11/22/2021"
+output:
+  html_document: 
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+library(ggplot2)
+library(survival)
+library(dplyr)
+library(flextable)
+library(ggfortify)
+theme_set(theme_bw())
+```
+
+#### Introduction
+
+The Myeloma dataset is a collection of observations of veterans with Myeloma or blood cancer. We are examining various health characteristics and effect on the lifetime of the person.
+
+##### Descriptive Statistics 
+```{r}
+Myeloma <- read.csv("Myeloma.csv")
+```
+
+
+```{r}
+Myeloma.sum <- Myeloma %>% 
+  summarise(TotalObs = n(), 
+            Deaths = sum(VStatus), 
+            Censored = n() - Deaths,
+            Percent_Censored = round(Censored/TotalObs, 2))
+Myeloma.sum %>% 
+  flextable() %>% 
+  set_caption("Myeloma Percent Censored")
+```
+
+We see there is `r Myeloma.sum$Percent_Censored`% of the observations censored. Let's examine the survival, hazard and probability density of Myeloma nonparametrically.
+
+
+##### Kaplan Mier Survival and Hazard Curves 
+```{r}
+survtimes <-  Surv(Myeloma$Time, Myeloma$VStatus)
+km.fit.nc <- survfit(survtimes ~ 1, conf.type = "log-log") #kaplan meier curve no covariates
+
+autoplot(km.fit.nc, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients ",
+       x = "Time",
+       y = "Survival Probability")
+```
+
+Looking at the censoring times they seem to be spread out across the survival curve and this is indicative for uninformative censoring which is an assumption of survival analysis. 
+
+```{r, include= FALSE}
+km.fit.nc.sum<- broom::tidy(km.fit.nc) %>% 
+  filter(n.event > 0) %>% 
+  mutate(hazard = n.event / (n.risk * (lead(time) - time))) %>%
+  mutate(probability  = estimate * hazard) %>% 
+  mutate(midtime = (lead(time) + time)/2)
+```
+
+
+```{r}
+ggplot(km.fit.nc.sum, aes(x = midtime, y = hazard)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Hazard Rate of Myeloma Patients Calcuated at the Midpoint",
+       x = "Time",
+       y = "Hazard Rate")
+  
+```
+
+Looking at the hazard rate of the Myeloma Patients we see what looks like a increasing hazard rate when we decided to fit a distribution to the data it is good to know this. 
+
+
+### Exploring covariates
+
+Let's explore the various covariates in our data to see if they have different and proportional survival curves. We will begin exploring the catagorical variables. 
+
+#### Categorical Variables 
+
+##### Platelet
+
+```{r}
+km.fit.platelet <- survfit(survtimes ~ Myeloma$Platelet, conf.type = "log-log")
+
+autoplot(km.fit.platelet, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given Platelet",
+       x = "Time",
+       y = "Survival Probability",
+       color = "Platelet")
+```
+
+
+
+When comparing platelet we see that that the curves look proportional. We see that 0 platelet curve has a smaller survival probability then observations with platelet.
+
+```{r}
+survdiff(survtimes ~ Myeloma$Platelet, rho = 0)
+```
+
+Doing a log rank test we see that there is not a significant difference at the .05 level but at the .10 level there is. If we were to model with this variable we could include it in the model.
+
+
+##### Fracture
+
+```{r}
+km.fit.frac <- survfit(survtimes ~ Myeloma$Frac, conf.type = "log-log")
+
+autoplot(km.fit.frac, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given Fracture",
+       x = "Time",
+       y = "Survival Probability",
+       color = "Fracture")
+```
+
+
+
+When comparing fracture we see that that the curves do not look that different. We see that 1 fracture curve has a smaller survival probability then observations without a fracture. It is hard to tell if these hazards are proportional. Conceptually a fracture might infleunce the overall lifetime of a patient so it might be okay to assume that the hazards are not proportional. 
+
+```{r}
+survdiff(survtimes ~ Myeloma$Frac, rho = 0)
+```
+
+We do see a significant difference in the survival probabilities between having a fraction and not which makes sense conceptually as well. For modeling purposes this variable could provide helpful insights. 
+
+#### Continous variables
+
+Handling continuous variables with kaplian meier curves is tricky since we will need to bucket the variable into catagories.
+
+##### LogBun
+
+```{r, include= FALSE}
+quantile_variable <- function(x, groups = 4){
+  cut(x, breaks=quantile(x, p=seq(0,1,length.out = groups + 1), na.rm=T ), include.lowest=T )
+}
+```
+
+```{r}
+km.fit.logbun <- survfit(survtimes ~ quantile_variable(Myeloma$LogBUN, 3), conf.type = "log-log")
+
+autoplot(km.fit.logbun, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given LogBun",
+       x = "Time",
+       y = "Survival Probability",
+       color = "LogBun Buckets") 
+```
+
+
+
+Looking at the curves we see the highest level of LogBun looks to be different and smalller from the rest of the levels.
+
+```{r}
+survdiff(survtimes ~ quantile_variable(Myeloma$LogBUN, 3), rho = 0)
+```
+Doing with log rank test we see that there is at least one group different. We hypothesis that it is the larger logbun.
+
+```{r}
+Myeloma <- Myeloma %>% 
+  mutate(LogBun_Bucket = quantile_variable(LogBUN, 3))
+survminer::pairwise_survdiff(Surv(Time, VStatus) ~ LogBun_Bucket, Myeloma, p.adjust.method = "bonferroni")
+```
+Doing pairwise test we see that it is the high level of LogBun that is different then the other levels. This could indicate that the effect of LogBun is non linear with survival probability though not necessarily as we use quantiles to bucket the data and it is not uniformly spaced. 
+
+
+##### HGB
+```{r}
+km.fit.HGB <- survfit(survtimes ~ quantile_variable(Myeloma$HGB, 3), conf.type = "log-log")
+
+autoplot(km.fit.HGB, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given HGB",
+       x = "Time",
+       y = "Survival Probability",
+       color = "HGB Buckets") 
+```
+
+
+
+Looking at these curves it seems that higher levels of HGB has a positive effect on survival probability.
+
+
+##### Age
+
+```{r}
+km.fit.Age <- survfit(survtimes ~ quantile_variable(Myeloma$Age, 3), conf.type = "log-log")
+
+autoplot(km.fit.Age , conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given Age",
+       x = "Time",
+       y = "Survival Probability",
+       color = "Age Buckets") 
+```
+
+Looking at age the groups of age don't seem to be that different with each other. For modeling this variable may not be important. Though it may be conceptually an important variable to include anyway to control for age.
+
+```{r}
+survdiff(survtimes ~ quantile_variable(Myeloma$Age, 3), rho = 0)
+```
+
+
+##### LogWBC
+
+```{r}
+km.fit.LogWBC <- survfit(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), conf.type = "log-log")
+
+autoplot(km.fit.LogWBC, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given LogWBC",
+       x = "Time",
+       y = "Survival Probability",
+       color = "LogWBC Buckets") 
+```
+
+Looking at LogWBC the curves do not look that different. As such this variable might not tell us information in modeling survival probability.
+
+```{r}
+survdiff(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), rho = 0)
+```
+
+##### LogPBM
+
+```{r}
+km.fit.LogPBM <- survfit(survtimes ~ quantile_variable(Myeloma$LogPBM, 3), conf.type = "log-log")
+
+autoplot(km.fit.LogPBM, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given LogPBM",
+       x = "Time",
+       y = "Survival Probability",
+       color = "LogPBM Buckets") 
+```
+
+This variable also does not look look different in the survival probabilities.
+
+```{r}
+survdiff(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), rho = 0)
+```
+
+##### Protein
+```{r}
+km.fit.Protein <- survfit(survtimes ~ ifelse(Myeloma$Protein > 0, "1 or more", "0"), conf.type = "log-log")
+
+autoplot(km.fit.Protein, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given Protein",
+       x = "Time",
+       y = "Survival Probability",
+       color = "Protein Buckets") 
+```
+
+Protein is an interesting variable as most of the observations are 0 or 1. Closer analysis is needed to determine the relationship with protein and survival probability but so far it does not seem to explain survival probabilty.
+
+##### SCalc
+
+
+```{r}
+km.fit.SCalc <- survfit(survtimes ~ quantile_variable(Myeloma$SCalc, 3), conf.type = "log-log")
+
+autoplot(km.fit.SCalc, conf.int = F) +   
+  labs(title = "Survival Probability of Myeloma Patients given SCalc",
+       x = "Time",
+       y = "Survival Probability",
+       color = "SCalc Buckets") 
+```
+
+SCalc also does not seem to contribute to the survival probability.
+
+
+### Summary of Nonparametic exploring 
+
+When looking at variations in the kaplan meir curves we see some covariates are good possible candidate for modeling the hazard rate of Myeloma patients. 
+
+
+Variables Summary:
+
++ Platelet:
+  + Almost significant difference between groups 
+
++ Fracture:
+  + Significant difference between groups
+  + Hazards do not look proportional 
+
++ LogBun:
+  + Significant difference from large group
+  + As LogBun increases then survival decreases
+
++ HGB :
+  + As HGB increases survival increases
+
++ Age :
+  + As Age increases survival increases then decreases
+  
++ LogWBC:
+  + No strong relationship
+
++ LogPBM:
+  + No strong relationship
+  
++ Protein:
+  + relationship unclear
+
++ Scalc
+  + No strong relationship
+
+#CoxPh
+```{r}
+Myeloma <- Myeloma %>% 
+  select(-LogBun_Bucket)
+```
+
+
+```{r}
+coxph.model <- coxph(Surv(Time, VStatus) ~ . , data = Myeloma)
+summary(coxph.model)
+```
+```{r}
+car::vif(coxph.model)
+```
+
+Without any collinearity the p.values can be trusted
+```{r}
+cox.zph(coxph.model)
+```
+
+```{r}
+coxph.model.parse <- coxph(Surv(Time, VStatus) ~ LogBUN + HGB, data = Myeloma)
+cox.zph(coxph.model.parse)
+```
+```{r}
+survminer::ggcoxzph(cox.zph(coxph.model.parse))
+```
+```{r}
+ggcoxdiagnostics(fit, type = , linear.predictions = TRUE)
+```
+

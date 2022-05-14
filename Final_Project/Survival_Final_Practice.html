@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Victor Feagins" />
+
+<meta name="date" content="2021-11-22" />
+
+<title>Survival Final Practice</title>
+
+<script src="Survival_Final_Practice_files/header-attrs-2.5/header-attrs.js"></script>
+<script src="Survival_Final_Practice_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Survival_Final_Practice_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="Survival_Final_Practice_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Survival_Final_Practice_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Survival_Final_Practice_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="Survival_Final_Practice_files/navigation-1.1/tabsets.js"></script>
+<link href="Survival_Final_Practice_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Survival_Final_Practice_files/highlightjs-9.12.0/highlight.js"></script>
+<link href="Survival_Final_Practice_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="Survival_Final_Practice_files/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="Survival_Final_Practice_files/tabwid-1.0.0/tabwid.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Survival Final Practice</h1>
+<h4 class="author">Victor Feagins</h4>
+<h4 class="date">11/22/2021</h4>
+
+</div>
+
+
+<div id="introduction" class="section level4">
+<h4>Introduction</h4>
+<p>The Myeloma dataset is a collection of observations of veterans with Myeloma or blood cancer. We are examining various health characteristics and effect on the lifetime of the person.</p>
+<div id="descriptive-statistics" class="section level5">
+<h5>Descriptive Statistics</h5>
+<pre class="r"><code>Myeloma &lt;- read.csv(&quot;Myeloma.csv&quot;)</code></pre>
+<pre class="r"><code>Myeloma.sum &lt;- Myeloma %&gt;% 
+  summarise(TotalObs = n(), 
+            Deaths = sum(VStatus), 
+            Censored = n() - Deaths,
+            Percent_Censored = round(Censored/TotalObs, 2))
+Myeloma.sum %&gt;% 
+  flextable() %&gt;% 
+  set_caption(&quot;Myeloma Percent Censored&quot;)</code></pre>
+<template id="4272dfd9-40e4-4b25-8fe7-98267a5bfe81"><style>
+.tabwid table{
+  border-spacing:0px !important;
+  border-collapse:collapse;
+  line-height:1;
+  margin-left:auto;
+  margin-right:auto;
+  border-width: 0;
+  display: table;
+  margin-top: 1.275em;
+  margin-bottom: 1.275em;
+  border-color: transparent;
+}
+.tabwid_left table{
+  margin-left:0;
+}
+.tabwid_right table{
+  margin-right:0;
+}
+.tabwid td {
+    padding: 0;
+}
+.tabwid a {
+  text-decoration: none;
+}
+.tabwid thead {
+    background-color: transparent;
+}
+.tabwid tfoot {
+    background-color: transparent;
+}
+.tabwid table tr {
+background-color: transparent;
+}
+</style><div class="tabwid"><style>.cl-7a5eabc0{}.cl-79f9ce9e{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-7a005e58{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-7a00d392{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-7a00d393{width:54pt;background-color:transparent;vertical-align: middle;border-bottom: 2pt solid rgba(102, 102, 102, 1.00);border-top: 2pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table class='cl-7a5eabc0'><caption class="Table Caption">Myeloma Percent Censored</caption><thead><tr style="overflow-wrap:break-word;"><td class="cl-7a00d393"><p class="cl-7a005e58"><span class="cl-79f9ce9e">TotalObs</span></p></td><td class="cl-7a00d393"><p class="cl-7a005e58"><span class="cl-79f9ce9e">Deaths</span></p></td><td class="cl-7a00d393"><p class="cl-7a005e58"><span class="cl-79f9ce9e">Censored</span></p></td><td class="cl-7a00d393"><p class="cl-7a005e58"><span class="cl-79f9ce9e">Percent_Censored</span></p></td></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-7a00d392"><p class="cl-7a005e58"><span class="cl-79f9ce9e">65</span></p></td><td class="cl-7a00d392"><p class="cl-7a005e58"><span class="cl-79f9ce9e">48</span></p></td><td class="cl-7a00d392"><p class="cl-7a005e58"><span class="cl-79f9ce9e">17</span></p></td><td class="cl-7a00d392"><p class="cl-7a005e58"><span class="cl-79f9ce9e">0.26</span></p></td></tr></tbody></table></div></template>
+<div class="flextable-shadow-host" id="304ba3be-2283-41f1-9006-29e163eea089"></div>
+<script>
+var dest = document.getElementById("304ba3be-2283-41f1-9006-29e163eea089");
+var template = document.getElementById("4272dfd9-40e4-4b25-8fe7-98267a5bfe81");
+var caption = template.content.querySelector("caption");
+if(caption) {
+  caption.style.cssText = "display:block;text-align:center;";
+  var newcapt = document.createElement("p");
+  newcapt.appendChild(caption)
+  dest.parentNode.insertBefore(newcapt, dest.previousSibling);
+}
+var fantome = dest.attachShadow({mode: 'open'});
+var templateContent = template.content;
+fantome.appendChild(templateContent);
+</script>
+
+<p>We see there is 0.26% of the observations censored. Let’s examine the survival, hazard and probability density of Myeloma nonparametrically.</p>
+</div>
+<div id="kaplan-mier-survival-and-hazard-curves" class="section level5">
+<h5>Kaplan Mier Survival and Hazard Curves</h5>
+<pre class="r"><code>survtimes &lt;-  Surv(Myeloma$Time, Myeloma$VStatus)
+km.fit.nc &lt;- survfit(survtimes ~ 1, conf.type = &quot;log-log&quot;) #kaplan meier curve no covariates
+
+autoplot(km.fit.nc, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients &quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;)</code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Looking at the censoring times they seem to be spread out across the survival curve and this is indicative for uninformative censoring which is an assumption of survival analysis.</p>
+<pre class="r"><code>ggplot(km.fit.nc.sum, aes(x = midtime, y = hazard)) +
+  geom_point() +
+  geom_line() +
+  labs(title = &quot;Hazard Rate of Myeloma Patients Calcuated at the Midpoint&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Hazard Rate&quot;)</code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Looking at the hazard rate of the Myeloma Patients we see what looks like a increasing hazard rate when we decided to fit a distribution to the data it is good to know this.</p>
+</div>
+</div>
+<div id="exploring-covariates" class="section level3">
+<h3>Exploring covariates</h3>
+<p>Let’s explore the various covariates in our data to see if they have different and proportional survival curves. We will begin exploring the catagorical variables.</p>
+<div id="categorical-variables" class="section level4">
+<h4>Categorical Variables</h4>
+<div id="platelet" class="section level5">
+<h5>Platelet</h5>
+<pre class="r"><code>km.fit.platelet &lt;- survfit(survtimes ~ Myeloma$Platelet, conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.platelet, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given Platelet&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;Platelet&quot;)</code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>When comparing platelet we see that that the curves look proportional. We see that 0 platelet curve has a smaller survival probability then observations with platelet.</p>
+<pre class="r"><code>survdiff(survtimes ~ Myeloma$Platelet, rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ Myeloma$Platelet, rho = 0)
+## 
+##                     N Observed Expected (O-E)^2/E (O-E)^2/V
+## Myeloma$Platelet=0  9        8     4.46     2.815      3.29
+## Myeloma$Platelet=1 56       40    43.54     0.288      3.29
+## 
+##  Chisq= 3.3  on 1 degrees of freedom, p= 0.07</code></pre>
+<p>Doing a log rank test we see that there is not a significant difference at the .05 level but at the .10 level there is. If we were to model with this variable we could include it in the model.</p>
+</div>
+<div id="fracture" class="section level5">
+<h5>Fracture</h5>
+<pre class="r"><code>km.fit.frac &lt;- survfit(survtimes ~ Myeloma$Frac, conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.frac, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given Fracture&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;Fracture&quot;)</code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>When comparing fracture we see that that the curves do not look that different. We see that 1 fracture curve has a smaller survival probability then observations without a fracture. It is hard to tell if these hazards are proportional. Conceptually a fracture might infleunce the overall lifetime of a patient so it might be okay to assume that the hazards are not proportional.</p>
+<pre class="r"><code>survdiff(survtimes ~ Myeloma$Frac, rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ Myeloma$Frac, rho = 0)
+## 
+##                 N Observed Expected (O-E)^2/E (O-E)^2/V
+## Myeloma$Frac=0 16        8     10.7     0.694     0.941
+## Myeloma$Frac=1 49       40     37.3     0.200     0.941
+## 
+##  Chisq= 0.9  on 1 degrees of freedom, p= 0.3</code></pre>
+<p>We do see a significant difference in the survival probabilities between having a fraction and not which makes sense conceptually as well. For modeling purposes this variable could provide helpful insights.</p>
+</div>
+</div>
+<div id="continous-variables" class="section level4">
+<h4>Continous variables</h4>
+<p>Handling continuous variables with kaplian meier curves is tricky since we will need to bucket the variable into catagories.</p>
+<div id="logbun" class="section level5">
+<h5>LogBun</h5>
+<pre class="r"><code>km.fit.logbun &lt;- survfit(survtimes ~ quantile_variable(Myeloma$LogBUN, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.logbun, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given LogBun&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;LogBun Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Looking at the curves we see the highest level of LogBun looks to be different and smalller from the rest of the levels.</p>
+<pre class="r"><code>survdiff(survtimes ~ quantile_variable(Myeloma$LogBUN, 3), rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ quantile_variable(Myeloma$LogBUN, 
+##     3), rho = 0)
+## 
+##                                                    N Observed Expected
+## quantile_variable(Myeloma$LogBUN, 3)=[0.778,1.23] 24       17     19.7
+## quantile_variable(Myeloma$LogBUN, 3)=(1.23,1.45]  20       16     20.7
+## quantile_variable(Myeloma$LogBUN, 3)=(1.45,2.24]  21       15      7.6
+##                                                   (O-E)^2/E (O-E)^2/V
+## quantile_variable(Myeloma$LogBUN, 3)=[0.778,1.23]     0.371     0.673
+## quantile_variable(Myeloma$LogBUN, 3)=(1.23,1.45]      1.067     2.128
+## quantile_variable(Myeloma$LogBUN, 3)=(1.45,2.24]      7.213     9.450
+## 
+##  Chisq= 9.6  on 2 degrees of freedom, p= 0.008</code></pre>
+<p>Doing with log rank test we see that there is at least one group different. We hypothesis that it is the larger logbun.</p>
+<pre class="r"><code>Myeloma &lt;- Myeloma %&gt;% 
+  mutate(LogBun_Bucket = quantile_variable(LogBUN, 3))
+survminer::pairwise_survdiff(Surv(Time, VStatus) ~ LogBun_Bucket, Myeloma, p.adjust.method = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using Log-Rank test 
+## 
+## data:  Myeloma and LogBun_Bucket 
+## 
+##             [0.778,1.23] (1.23,1.45]
+## (1.23,1.45] 1.000        -          
+## (1.45,2.24] 0.036        0.031      
+## 
+## P value adjustment method: bonferroni</code></pre>
+<p>Doing pairwise test we see that it is the high level of LogBun that is different then the other levels. This could indicate that the effect of LogBun is non linear with survival probability though not necessarily as we use quantiles to bucket the data and it is not uniformly spaced.</p>
+</div>
+<div id="hgb" class="section level5">
+<h5>HGB</h5>
+<pre class="r"><code>km.fit.HGB &lt;- survfit(survtimes ~ quantile_variable(Myeloma$HGB, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.HGB, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given HGB&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;HGB Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Looking at these curves it seems that higher levels of HGB has a positive effect on survival probability.</p>
+</div>
+<div id="age" class="section level5">
+<h5>Age</h5>
+<pre class="r"><code>km.fit.Age &lt;- survfit(survtimes ~ quantile_variable(Myeloma$Age, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.Age , conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given Age&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;Age Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Looking at age the groups of age don’t seem to be that different with each other. For modeling this variable may not be important. Though it may be conceptually an important variable to include anyway to control for age.</p>
+<pre class="r"><code>survdiff(survtimes ~ quantile_variable(Myeloma$Age, 3), rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ quantile_variable(Myeloma$Age, 
+##     3), rho = 0)
+## 
+##                                              N Observed Expected (O-E)^2/E
+## quantile_variable(Myeloma$Age, 3)=[38,55.3] 22       18     15.2     0.509
+## quantile_variable(Myeloma$Age, 3)=(55.3,66] 24       16     22.4     1.841
+## quantile_variable(Myeloma$Age, 3)=(66,82]   19       14     10.4     1.280
+##                                             (O-E)^2/V
+## quantile_variable(Myeloma$Age, 3)=[38,55.3]     0.787
+## quantile_variable(Myeloma$Age, 3)=(55.3,66]     3.837
+## quantile_variable(Myeloma$Age, 3)=(66,82]       1.798
+## 
+##  Chisq= 4.1  on 2 degrees of freedom, p= 0.1</code></pre>
+</div>
+<div id="logwbc" class="section level5">
+<h5>LogWBC</h5>
+<pre class="r"><code>km.fit.LogWBC &lt;- survfit(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.LogWBC, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given LogWBC&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;LogWBC Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Looking at LogWBC the curves do not look that different. As such this variable might not tell us information in modeling survival probability.</p>
+<pre class="r"><code>survdiff(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ quantile_variable(Myeloma$LogWBC, 
+##     3), rho = 0)
+## 
+##                                                   N Observed Expected (O-E)^2/E
+## quantile_variable(Myeloma$LogWBC, 3)=[3.36,3.68] 22       17     20.0   0.45385
+## quantile_variable(Myeloma$LogWBC, 3)=(3.68,3.82] 21       16     13.3   0.52911
+## quantile_variable(Myeloma$LogWBC, 3)=(3.82,4.95] 22       15     14.6   0.00869
+##                                                  (O-E)^2/V
+## quantile_variable(Myeloma$LogWBC, 3)=[3.36,3.68]    0.8476
+## quantile_variable(Myeloma$LogWBC, 3)=(3.68,3.82]    0.7884
+## quantile_variable(Myeloma$LogWBC, 3)=(3.82,4.95]    0.0138
+## 
+##  Chisq= 1.1  on 2 degrees of freedom, p= 0.6</code></pre>
+</div>
+<div id="logpbm" class="section level5">
+<h5>LogPBM</h5>
+<pre class="r"><code>km.fit.LogPBM &lt;- survfit(survtimes ~ quantile_variable(Myeloma$LogPBM, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.LogPBM, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given LogPBM&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;LogPBM Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>This variable also does not look look different in the survival probabilities.</p>
+<pre class="r"><code>survdiff(survtimes ~ quantile_variable(Myeloma$LogWBC, 3), rho = 0)</code></pre>
+<pre><code>## Call:
+## survdiff(formula = survtimes ~ quantile_variable(Myeloma$LogWBC, 
+##     3), rho = 0)
+## 
+##                                                   N Observed Expected (O-E)^2/E
+## quantile_variable(Myeloma$LogWBC, 3)=[3.36,3.68] 22       17     20.0   0.45385
+## quantile_variable(Myeloma$LogWBC, 3)=(3.68,3.82] 21       16     13.3   0.52911
+## quantile_variable(Myeloma$LogWBC, 3)=(3.82,4.95] 22       15     14.6   0.00869
+##                                                  (O-E)^2/V
+## quantile_variable(Myeloma$LogWBC, 3)=[3.36,3.68]    0.8476
+## quantile_variable(Myeloma$LogWBC, 3)=(3.68,3.82]    0.7884
+## quantile_variable(Myeloma$LogWBC, 3)=(3.82,4.95]    0.0138
+## 
+##  Chisq= 1.1  on 2 degrees of freedom, p= 0.6</code></pre>
+</div>
+<div id="protein" class="section level5">
+<h5>Protein</h5>
+<pre class="r"><code>km.fit.Protein &lt;- survfit(survtimes ~ ifelse(Myeloma$Protein &gt; 0, &quot;1 or more&quot;, &quot;0&quot;), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.Protein, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given Protein&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;Protein Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Protein is an interesting variable as most of the observations are 0 or 1. Closer analysis is needed to determine the relationship with protein and survival probability but so far it does not seem to explain survival probabilty.</p>
+</div>
+<div id="scalc" class="section level5">
+<h5>SCalc</h5>
+<pre class="r"><code>km.fit.SCalc &lt;- survfit(survtimes ~ quantile_variable(Myeloma$SCalc, 3), conf.type = &quot;log-log&quot;)
+
+autoplot(km.fit.SCalc, conf.int = F) +   
+  labs(title = &quot;Survival Probability of Myeloma Patients given SCalc&quot;,
+       x = &quot;Time&quot;,
+       y = &quot;Survival Probability&quot;,
+       color = &quot;SCalc Buckets&quot;) </code></pre>
+<p><img src="Survival_Final_Practice_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>SCalc also does not seem to contribute to the survival probability.</p>
+</div>
+</div>
+</div>
+<div id="summary-of-nonparametic-exploring" class="section level3">
+<h3>Summary of Nonparametic exploring</h3>
+<p>When looking at variations in the kaplan meir curves we see some covariates are good possible candidate for modeling the hazard rate of Myeloma patients.</p>
+<p>Variables Summary:</p>
+<ul>
+<li>Platelet:
+<ul>
+<li>Almost significant difference between groups</li>
+</ul></li>
+<li>Fracture:
+<ul>
+<li>Significant difference between groups</li>
+<li>Hazards do not look proportional</li>
+</ul></li>
+<li></li>
+</ul>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+---
+title: "Survival Analysis HW 3"
+author: "Victor Feagins"
+date: "10/1/2021"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+library(dplyr) 
+library(survival)
+library(flextable)
+library(ggplot2)
+library(ggfortify)
+theme_set(theme_bw()) #Make ggplots black and white theme
+```
+
+### Question 5.8
+
+Using the data from Table 3.1 compare the age distribution of the two groups
+
+
+```{r, echo=FALSE}
+df.5.8 <- haven::read_sas("total.sas7bdat")
+
+df.5.8 %>% 
+  select(-CENSOR1, - CENSOR2) %>% 
+  head(10) %>% 
+  flextable() %>% 
+  set_caption("First 10 Observations of Melanoma Patients") %>% 
+  autofit()
+```
+
+#### Lifetime
+In this problem we will be looking at lifetime of a patient comparing treatments.
+```{r}
+surv.data.5.8 <- Surv(df.5.8$LIFETIME, df.5.8$DEATH)
+km.5.8 <- survfit(surv.data.5.8 ~ TREATMENT, data = df.5.8)
+summary(km.5.8)
+```
+```{r}
+autoplot(km.5.8, conf.int = F) +
+  labs(title = "Life Time Survival by Treatment",
+       x = "Time",
+       y = "Survival Probability",
+       colour = "Treatment")
+```
+
+Testing to see if the groups are different?
+
+```{r}
+survdiff(surv.data.5.8 ~ TREATMENT, data = df.5.8)
+```
+
+When looking at the log rank test we have a p value of .4 which means we fail to reject the null that the two treatments result in different lifetime survival times.
+
+
+#### Remission Time
+
+We did not see a significant change in the lifetimes between treatments but perhaps we can see a difference in the remission times. 
+
+```{r}
+surv.data.5.8 <- Surv(df.5.8$REMTIME, df.5.8$RELAPSE)
+km.5.8 <- survfit(surv.data.5.8 ~ TREATMENT, data = df.5.8)
+summary(km.5.8)
+```
+
+```{r}
+autoplot(km.5.8, conf.int = F) +
+  labs(title = "Time to Relapse by Treatment",
+       x = "Time",
+       y = "Survival Probability",
+       colour = "Treatment")
+```
+
+```{r}
+survdiff(surv.data.5.8 ~ TREATMENT, data = df.5.8)
+```
+
+In time to relapse we also don't see a significant difference in time to relapse with a p value of .8.
+
+### Question 5.14
+Sixty-six patients are separated into three treatment groups. The initial remission times are given in weeks. Are the three treatment groups equally effective in prolonging remission? Discuss your findings!
+
+```{r, echo = FALSE}
+df.5.14 <- haven::read_sas("example5_14.sas7bdat")
+
+df.5.14 %>% 
+  group_by(treat) %>% 
+  slice_sample(n = 3) %>% 
+  flextable() %>% 
+  set_caption("9 Observations of Remission Times")
+```
+
+```{r}
+surv.data.5.14 <- Surv(df.5.14$time, abs(df.5.14$cens))
+km.5.14 <- survfit(surv.data.5.14 ~ treat, data = df.5.14)
+summary(km.5.14)
+```
+
+```{r}
+autoplot(km.5.14, conf.int = F) +
+  labs(title = "Remission Times by Treatment",
+       x = "Time",
+       y = "Survival Probability",
+       colour = "Treatment")
+```
+
+```{r}
+survdiff(surv.data.5.14 ~ treat, data = df.5.14)
+```
+
+Over all treatments we see a significance difference in at least one treatment.
+```{r}
+survminer::pairwise_survdiff(Surv(time, cens) ~ treat, data = df.5.14, p.adjust.method = "bonferroni")
+```
+
+When doing pairwise comparisons we see that treatment 1 is the most different which we could have inferred from the graph but none of the treatments are significantly different from each other. We will need more information in treatment 1 study to possibly arrive at statistical significance. 
+
+```{r}
+survminer::pairwise_survdiff(Surv(time, cens) ~ treat, data = df.5.14, p.adjust.method = "none")
+```
+
+It is important to recognize that without adjusting for the p.value we do see a significant difference showing the importance for adjusting and possible reasoning to continue examining treatment 1. 
+

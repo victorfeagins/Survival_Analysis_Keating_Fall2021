@@ -1,0 +1,5 @@
+ proc lifetest method=life 
+ intervals=0 to 20 by 5 plots =(s,h) graphics;
+ time time*cens(0);
+ freq number;
+ run;

@@ -1,0 +1,151 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+  \usepackage{amssymb}
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={test},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{test}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\%Colors and style for President
+
+\newcommand\Pcolor{rgb:black,1;white,2}
+
+\%Color for President Outline
+
+\tikzstyle{Pblock} = {[}rectangle, draw = rgb:black,1;white,2,
+fill=none, text width=5em, text centered, rounded corners, minimum
+height=4em{]}
+
+\%Colors and style for Vice President
+
+\newcommand\VPcolor{rgb:black,1;white,2}
+
+\%Color for Vice-President Outline and Lines \tikzstyle{VPblock} =
+{[}rectangle, draw = rgb:black,1;white,2, fill=none, text width=5em,
+text centered, rounded corners, minimum height=4em{]} \tikzstyle{VPline}
+= {[}draw, very thick, color = rgb:black,1;white,2, -latex'{]}
+
+\%Colors and style for Middle Row
+
+\newcommand\RowOneColor{rgb:black,1;white,2}
+
+\%Color for Middle Row Outline and Lines \tikzstyle{blockr1} =
+{[}rectangle, draw = rgb:black,1;white,2, fill=none, text width=5em,
+text centered, rounded corners, minimum height=4em{]} \tikzstyle{rank1}
+= {[}draw, very thick, color=rgb:black,1;white,2, -latex'{]}
+
+\%Colors and style for Bottom Row
+
+\newcommand\Mcolor{rgb:black,1;white,2}
+
+\%Color for Member Outline and Lines \tikzstyle{Mblock} = {[}rectangle,
+draw = rgb:black,1;white,2, fill=none, text width=5em, text centered,
+rounded corners, minimum height=4em{]} \tikzstyle{Mline} = {[}draw, very
+thick, color=rgb:black,1;white,2, -latex'{]}
+
+\newcommand\JOcolor{rgb:black,1;white,2}
+
+\%Color for Junior Office Outline and Lines \tikzstyle{JOblock} =
+{[}rectangle, draw = rgb:black,1;white,2, fill=none, text width=5em,
+text centered, rounded corners, minimum height=4em{]} \tikzstyle{JOline}
+= {[}draw, very thick, color=rgb:black,1;white,2, -latex'{]}
+
+\textbackslash begin\{tikzpicture\}{[}node distance = 3cm, auto{]}
+
+\%\% \type [options] (label) \{test\}; default
+
+\coordinate (empty1); \%\% Anchor point
+\node [Pblock, left of = empty1, node distance = 1.5cm](P)\{President\};
+\%\% left of Anchor
+\node [VPblock,  right of = empty1, node distance = 1.5cm](VP)\{Vice
+President\}; \%\% right of Anchor
+
+\coordinate [below of = empty1](empty2); \%\% Anchor Point Below the
+first point
+\node [blockr1,  right of=empty2, node distance = 0cm](T)\{Treasurer\};
+\node [blockr1, right of = T](S)\{Secretary\};
+\node [blockr1, left of = empty2](SC)\{Social Chair\};
+
+\coordinate [below of = empty2](empty3);\%\% Anchor Point Below the
+third point
+\node [JOblock, right of = empty3, node distance = 1.5cm](JO)\{Junior
+Officer\};
+\node [Mblock, left of = empty3, node distance = 1.5cm](M)\{Member\};
+
+\%\% Arrows
+
+\path [VPline] (VP) -- (P);
+
+\foreach \n in \{P, VP\}\{ \path [rank1] (T) -- (\n); \path [rank1] (SC)
+-- (\n); \path [rank1] (S) -- (\n); \}
+
+\foreach \n in \{SC, T, S\}\{ \path [Mline] (M) -- (\n);
+\path [JOline] (JO) -- (\n); \}
+
+\path [Mline] (M) -- (JO);
+
+\end{document}

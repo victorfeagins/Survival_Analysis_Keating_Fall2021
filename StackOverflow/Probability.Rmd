@@ -1,0 +1,51 @@
+---
+title: "Probability with Data"
+author: "Victor Feagins"
+date: "11/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+df <- iris
+```
+
+We can fit various distributions to data. If we look at the Sepal.Width in the iris dataset it seems to be normal.
+
+```{r}
+ggplot(df, mapping = aes(x = Sepal.Width))+
+  geom_histogram(aes(y = ..density..), color="black", fill="white")+
+  geom_density()
+```
+
+We can do a statistical test to see if it is normal
+
+```{r}
+shapiro.test(df$Sepal.Width)
+```
+We fail to reject the null that the data is not normal so we can assume that it is normal.
+
+Let's fit the normal distributions parameters from the data.
+```{r}
+norm.parm <- fitdistr(df$Sepal.Width, "normal") #From the MASS package
+```
+
+
+We can now use these parameters in the normal cumulative density function (CDF). Remember the CDF is the probability of a value being less then $x$
+
+$$ F(x) = P(X \le x) $$
+
+
+For the normal distribution we would expect that 50% of the data is less then the mean of the data.
+```{r}
+pnorm(mean(df$Sepal.Width), mean = norm.parm$estimate["mean"], sd = norm.parm$estimate["sd"])
+```
+
+Using the `qnorm` function we see that the mean lies at the 50% probability. We would expect a 50% chance to see points above or below this point. We can also do $ 1 - P(X \le x) $ to see what the probability of seeing a point greater then x.
+
+

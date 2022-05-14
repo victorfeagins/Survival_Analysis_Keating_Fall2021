@@ -1,0 +1,170 @@
+---
+title: "Temp"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival)
+library(ggplot2)
+library(ggfortify)
+library(dplyr)
+library(flextable)
+library(magrittr)
+```
+
+
+```{r}
+rd <- "B	Censor	Time
+1	0	296.25
+2	0	209.82
+3	1	60.00
+4	0	72.03
+5	0	63.01
+6	0	32.77
+7	0	268.22
+8	0	394.06
+9	0	183.37
+10	0	248.77
+11	0	212.99
+12	1	350.00
+13	0	124.74
+14	1	90.00
+15	0	118.90
+16	0	186.17
+17	0	155.28
+18	0	67.78
+19	0	56.28
+20	0	153.74
+21	0	160.94
+22	0	285.40
+23	0	167.50
+24	0	250.13
+25	1	60.00
+26	0	172.58
+27	0	215.16
+28	1	140.00
+29	0	270.13
+30	0	227.56
+31	0	300.46
+32	0	321.05
+33	0	112.76
+34	0	200.39
+35	0	176.51
+36	0	50.22
+37	0	364.47
+38	0	262.83
+39	1	130.00
+40	0	315.42
+41	0	300.91
+42	0	199.57
+43	0	319.30
+44	0	130.05
+45	0	107.04
+46	0	231.08
+47	0	78.12
+48	0	207.09
+49	0	103.54
+50	0	187.47
+51	0	112.51
+52	0	300.00
+53	0	165.16
+54	0	131.63
+55	0	328.21
+56	0	60.27
+57	0	220.78
+58	0	361.87
+59	0	214.97
+60	0	119.45"
+df <- read.delim(text = rd)
+```
+
+```{r}
+surv.1<- Surv(df$Time, abs(df$Censor -1))
+```
+
+```{r}
+km.fit<- survfit(surv.1 ~ 1, conf.type = "log-log")
+```
+
+```{r}
+autoplot(km.fit)
+```
+
+
+```{r}
+km.values <- broom::tidy(km.fit) %>% 
+  mutate(variance = estimate^2 * std.error^2)
+```
+
+```{r}
+sliced.2 <- km.values %>% 
+  filter(n.event != 0) %>% 
+  slice(which.min(abs(time - 60))-1, which.min(abs(time - 60))) # Grabs two points closes to t = 2
+sliced.2$std.error^2
+
+```
+
+
+
+
+```{r}
+wei.fit <- survreg(surv.1 ~ 1, dist = "weibull")
+loglog.fit <- survreg(surv.1 ~ 1, dist = "loglogistic")
+lognorm.fit <- survreg(surv.1 ~ 1, dist = "lognormal")
+```
+
+```{r}
+-2 * wei.fit$loglik[1]
+
+-2 * loglog.fit$loglik[1]
+
+-2 * lognorm.fit$loglik[1]
+```
+
+```{r}
+lognorm.fit
+```
+
+```{r}
+prob = 1:98/100
+test <- predict(lognorm.fit, type = "quantile", p = prob, se.fit = TRUE) #Survival times for all observations given probability
+
+#They are all the same survival times since we don't have any covariates so we just need the first row
+predict.loglog.2 <- data.frame(time = test$fit[1,], survival = 1 - prob, se = test$se.fit[1,])
+
+```
+
+```{r}
+ggplot(predict.loglog.2, mapping = aes(x = time, y = survival))+
+  geom_line()
+```
+
+
+```{r}
+lognorm.fit
+```
+
+```{r}
+test<- 110 %>% 
+  multiply_by(lognorm.fit$icoef[1]) %>% 
+  divide_by(exp(lognorm.fit$icoef[2])) %>% 
+  log() %>% 
+  pnorm(lower.tail = FALSE) %>% 
+  multiply_by(-1) %>% 
+  add(1)
+test
+```
+$$ S(t) = 1 - \Phi[\frac{ln(t) - \mu}{\sigma}] $$
+Where the $\mu$ is the intercept and $\sigma$ is the scale parameter. And $\Phi$ is the cumulative standard normal distribution
+```{r}
+test<- 60 %>% 
+  log() %>% 
+  subtract(lognorm.fit$icoef[1]) %>%
+  divide_by(exp(lognorm.fit$icoef[2])) %>% 
+  pnorm() %>% 
+  multiply_by(-1) %>% 
+  add(1)
+test
+```
+

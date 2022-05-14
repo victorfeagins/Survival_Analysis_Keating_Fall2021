@@ -1,0 +1,229 @@
+---
+title: "Survival Anaylsis Weibull"
+author: "Victor Feagins"
+date: "10/27/2021"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+library(dplyr)
+library(flextable)
+library(survival)
+library(ggplot2)
+library(ggfortify)
+theme_set(theme_bw())
+```
+
+### Question 1
+The following data are the survival times in years of 21 6MP patients whom we studied earlier in the semester. The data are given in LW and in the lecture notes on page 112. Their survival times are given in years. Obtain the MLE of the parameters and median survival times assuming
+a) one parameter exponential and
+b) a Weibull distribution and
+c) compare the two fit plots.
+
+#### Data
+
+```{r, echo=FALSE}
+df.1 <- haven::read_sas("lymphoma.sas7bdat")
+df.1 %>% 
+  group_by(censor) %>% 
+  slice_head(n = 5) %>% 
+  flextable() %>% 
+  set_caption("First 5 Censored and 5 Uncensored Observations of 6MP Patients")
+```
+#### Exponential Model 
+```{r}
+surv.1 <- Surv(df.1$time, abs(df.1$censor - 1))
+```
+
+
+
+```{r}
+exp.fit.1 <- survreg(surv.1 ~ 1, dist = "exponential")
+summary(exp.fit.1)
+```
+
+The median survival time for the exponential fit is `r unique(predict(exp.fit.1, p = .5, type = "quantile"))` and the MLE estimator for the Intercept is `r exp.fit.1$coefficients`
+
+
+#### Weibull Model
+
+```{r}
+wei.fit.1 <- survreg(surv.1 ~ 1, dist = "weibull")
+summary(wei.fit.1)
+```
+
+Fitting a Weibull model we have an Intercept of `r wei.fit.1$icoef[1]` and Scale of `r exp(wei.fit.1$icoef[2])`. This equates to an weibull scale or $\beta$ of `r exp(wei.fit.1$icoef[1])` and weibull shape or $\alpha$ of `r 1/exp(wei.fit.1$icoef[2])`. 
+
+The median survival times is `r unique(predict(wei.fit.1, p = .5, type = "quantile"))`
+
+#### Comparing both models
+
+Let's plot both models compared to a Kaplan Meier Curve.
+
+```{r}
+km.fit.1 <- survfit(surv.1 ~ 1) # Fits a Kaplan Meier Curve
+```
+
+```{r exp, include = FALSE}
+#Fitting values by hand
+time = seq(0, max(df.1$time), by = .01)
+exp.fit.1$coefficients
+
+haz <- exp(exp.fit.1$coefficients)
+
+survival = exp(- haz * time)
+
+predict.exp <- data.frame(y = survival, x = time)
+
+```
+
+```{r wei, include = FALSE}
+w.scale <- exp(wei.fit.1$icoef[1]) # weibull scale, beta
+w.shape <- 1/exp(wei.fit.1$icoef[2]) #weibull shape, alpha
+
+survival = exp(-(time/w.shape)^w.scale)
+
+predict.wei <- data.frame(y = survival, x = time)
+
+```
+
+
+
+
+```{r}
+autoplot(km.fit.1, conf.int = F) +
+  geom_line(data = predict.exp, mapping = aes(x = x, y = y, col = "Exponential")) +
+  geom_line(data = predict.wei, mapping = aes(x = x, y = y, col = "Weibull")) +
+  xlim(0,max(df.1$time)) +
+  labs(color = "Distribution",
+       x = "Time",
+       y = "S(t)", 
+       title = "Weibull and Exponential compared to Kaplan Meier") +
+  theme(legend.position="bottom")
+```
+
+Looking at the Exponential fit vs Weibull fit we see that the Exponential fits the Kaplan Meier closer then the Weibull. 
+
+Examining the -2 log likelihood:
+
++ Exponential: `r -2*exp.fit.1$loglik[1]`
+
++ Weibull: `r -2 * wei.fit.1$loglik[1]`
+
+Keep in mind these are on the unlogged observations. We see that the Exponential has a higher value indicating a better fit.
+By looking at the fits and log likelihood we can conclude that the Exponential is a better fit of the data.
+
+
+### Question 2
+Consider the tumor free days in ten animals. Assume the data follow a log-logistic distribution. Their times are given in days. Obtain the MLE of the parameters and median survival times assuming
+a) a Weibull distribution and
+b) a Log-logistic distribution and
+c) compare the two fit plots.
+
+#### Data
+
+```{r, echo=FALSE}
+df.2 <- haven::read_sas("tumorfree.sas7bdat")
+df.2 %>% 
+  slice_head(n = 5) %>% 
+  flextable() %>% 
+  set_caption("First 5 Observations of Tumor Free days in Animals")
+```
+
+#### Weibull Model
+```{r}
+surv.2 <- Surv(df.2$time)
+```
+
+```{r}
+wei.fit.2 <- survreg(surv.2 ~ 1, dist = "weibull")
+summary(wei.fit.2)
+```
+
+Fitting a Weibull model we have an Intercept of `r wei.fit.2$icoef[1]` and Scale of `r exp(wei.fit.2$icoef[2])`. 
+
+The median survival times is `r unique(predict(wei.fit.2, p = .5, type = "quantile"))`
+
+
+#### Log-Logistic Model
+
+
+```{r}
+loglog.fit.2 <- survreg(surv.2 ~ 1, dist = "loglogistic")
+summary(loglog.fit.2)
+```
+Fitting a Log-Logistic model we have an Intercept of `r loglog.fit.2$icoef[1]` and Scale of `r exp(loglog.fit.2$icoef[2])`. 
+
+The median survival times is `r unique(predict(loglog.fit.2, p = .5, type = "quantile"))`
+
+#### Comparing Both Models
+
+Let's plot both models compared to a Kaplan Meier Curve.
+
+
+```{r}
+km.fit.2 <- survfit(surv.2 ~ 1) # Fits a Kaplan Meier Curve
+```
+
+
+```{r , include = FALSE}
+time = seq(0, max(df.2$time), by = .5)
+w.scale <- exp(wei.fit.2$icoef[1]) # weibull scale, beta
+w.shape <- 1/exp(wei.fit.2$icoef[2]) #weibull shape, alpha
+
+survival = exp(-(time/w.shape)^w.scale)
+
+predict.wei.2 <- data.frame(y = survival, x = time)
+
+```
+
+```{r, include=FALSE}
+w.scale <- exp(loglog.fit.2$icoef[1]) # weibull scale, beta
+w.shape <- 1/exp(loglog.fit.2$icoef[2]) #weibull shape, alpha
+
+survival = (1 + (time/w.shape)^w.scale)^-1
+
+predict.loglog.2 <- data.frame(y = survival, x = time)
+
+```
+
+```{r, include=FALSE}
+prob = 1:98/100
+survival <- predict(loglog.fit.2, type = "quantile", p = prob) #Survival times for all observations given probability
+
+#They are all the same survival times since we don't have any covariates so we just need the first row
+predict.loglog.2 <- data.frame(x = survival[1,], y = 1 - prob)
+
+survival <- predict(wei.fit.2, type = "quantile", p = prob) #Survival times for all observations given probability
+predict.wei.2 <- data.frame(x = survival[1,], y = 1 - prob)
+
+```
+
+
+
+```{r}
+autoplot(km.fit.2, conf.int = F) +
+  geom_line(data = predict.wei.2, mapping = aes(x = x, y = y, col = "Weibull")) +
+  geom_line(data = predict.loglog.2, mapping = aes(x = x, y = y, col = "LogLog")) +
+  xlim(0,max(df.2$time)) +
+  labs(color = "Distribution",
+       x = "Time",
+       y = "S(t)", 
+       title = "Weibull and Log-Logistic compared to Kaplan Meier") +
+  theme(legend.position="bottom")
+```
+
+In this example the Weibull and Log-Logistic are very similar to each other and both follow the Kaplan Meier Curve closely.
+
+Examining the -2 log likelihood:
+
++ Exponential: `r -2*wei.fit.2$loglik[1]`
+
++ Log-Logistic: `r -2 * loglog.fit.2$loglik[1]`
+
+Keep in mind these are on the unlogged observations. We see that both distributions have similar loglikihood values. I conclude that either distribution would fit the data correctly and that we should consult with the assumptions that distribution makes about the survival process.
+

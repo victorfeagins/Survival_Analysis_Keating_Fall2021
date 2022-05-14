@@ -1,0 +1,225 @@
+---
+title: "Survival Analysis HW Chapter 2"
+author: "Victor Feagins"
+date: "9/8/2021"
+always_allow_html: true
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+library(readxl)
+library(dplyr)
+library(flextable)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+## Exercise 2.1
+
+Consider the survival data given in Exercise Table 2.1 and compute and plot the **estimated survivorship**, the **probability density** and the **hazard** functions.
+
+```{r, echo=FALSE}
+data.2.1 <- read_excel("Table 2.1 - Page 13 HW.xlsx", sheet = "Exercise 2.1", skip = 1, col_names = c("Initial_Time", "End_Time", "Number_Survivors_Initial", "Number_Dying_in_Interval"))
+data.2.1 %>% 
+  flextable() %>% 
+  autofit()
+```
+
+### Survivorship Function
+Survivorship is the probability that an individual survives longer than t. It is estimated with the following equation:
+
+$$\hat{S}(t) = \frac{number\;of\;items\;surviving\;longer\;than\;t}{total\;number\;of\;patients}$$
+
+#### Calcuating Survivorship Exercise 2.1
+
+```{r}
+data.2.1 <- data.2.1 %>% 
+  mutate('S(t)' = Number_Survivors_Initial/max(Number_Survivors_Initial))
+data.2.1 %>% 
+  select(Initial_Time, "S(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+#### Plotting Survivorship Exercise 2.1
+```{r}
+ggplot(data.2.1, aes(`Initial_Time`, `S(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("S"), "(t)"))) +
+  xlab("t")
+```
+
+### Probability Density
+
+#### Calcuating probability density  Exercise 2.1
+To estimate the probability density the following equation is used:
+
+$$\hat{f}(t) = \frac{number\;of\;items\;dying\;in\;the\;interval\;beginning\;at\; time \;t}{(total\;number\;of\;items)*(interval\; width)}$$
+This probability density is at the mid point of the interval
+```{r}
+data.2.1 <- data.2.1 %>% 
+  mutate(Mid_Time = (Initial_Time + End_Time)/2) %>% 
+  mutate("f(t)" = Number_Dying_in_Interval/(max(Number_Survivors_Initial) * (End_Time - Initial_Time)))
+data.2.1 %>% 
+  select(Mid_Time, "f(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+
+#### Plotting probability density  Exercise 2.1
+
+```{r}
+ggplot(data.2.1, aes(`Mid_Time`, `f(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("f"), "(t)"))) +
+  xlab("t")
+```
+
+### Hazard Function
+#### Calcuating Hazard Function Exercise 2.1
+To estimate the hazard function the following equation can be used:
+
+$$\hat{h}(t) = \frac{number\;of\;items\;dying\;per\;unit\;time\;in\;the\; interval}{(number\;of\;items\;surviving \; at\; t)-(number\;of\;deaths\;in\;the\;interval)/2}$$
+
+```{r}
+data.2.1 <- data.2.1 %>% 
+  mutate(Deaths_Per_Time = Number_Dying_in_Interval/(End_Time - Initial_Time),
+         "h(t)" = Deaths_Per_Time/(Number_Survivors_Initial - Number_Dying_in_Interval/2))
+
+data.2.1 %>% 
+  select(Mid_Time, "h(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+
+#### Plotting Hazard Function Exercise 2.1
+
+
+```{r}
+ggplot(data.2.1, aes(`Mid_Time`, `h(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("h"), "(t)"))) +
+  xlab("t")
+```
+
+## Exercise 2.2
+Table 2.2 is a life table for the total population of 100,000 live births in the United States, 1959 – 1961. Compute and plot the estimated **survivorship**, the **probability density**, and the **hazard** function.
+
+```{r, echo=FALSE}
+data.2.2 <- read_excel("Table 2.1 - Page 13 HW.xlsx", sheet = "Exercise 2.2", skip = 1, col_names = c("Initial_Time", "End_Time", "Number_Survivors_Initial", "Number_Dying_in_Interval"))
+data.2.2 %>% 
+  flextable() %>% 
+  autofit()
+```
+
+### Survivorship Function
+#### Calcuating Survivorship Exercise 2.2
+```{r}
+data.2.2 <- data.2.2 %>% 
+  mutate('S(t)' = Number_Survivors_Initial/max(Number_Survivors_Initial))
+data.2.2 %>% 
+  select(Initial_Time, "S(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+
+#### Ploting Survivorship Exercise 2.2
+```{r}
+ggplot(data.2.2, aes(`Initial_Time`, `S(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("S"), "(t)"))) +
+  xlab("t")
+```
+
+### Probability Density
+#### Calcuating probability density  Exercise 2.2
+
+```{r}
+data.2.2 <- data.2.2 %>% 
+  mutate(Mid_Time = (Initial_Time + End_Time)/2) %>% 
+  mutate("f(t)" = Number_Dying_in_Interval/(max(Number_Survivors_Initial) * (End_Time - Initial_Time)))
+data.2.2 %>% 
+  select(Mid_Time, "f(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+
+#### Plotting probability density  Exercise 2.2
+
+```{r}
+ggplot(data.2.2, aes(`Mid_Time`, `f(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("f"), "(t)"))) +
+  xlab("t")
+```
+
+### Hazard Function
+#### Calcuating Hazard Function Exercise 2.2
+```{r}
+data.2.2 <- data.2.2 %>% 
+  mutate(Deaths_Per_Time = Number_Dying_in_Interval/(End_Time - Initial_Time),
+         "h(t)" = Deaths_Per_Time/(Number_Survivors_Initial - Number_Dying_in_Interval/2))
+
+data.2.2 %>% 
+  select(Mid_Time, "h(t)") %>% 
+  flextable() %>% 
+  autofit()
+```
+
+#### Plotting Hazard Function Exercise 2.2
+```{r}
+ggplot(data.2.2, aes(`Mid_Time`, `h(t)`)) +
+  geom_line() +
+  geom_point() +
+  ylab(expression(paste(hat("h"), "(t)"))) +
+  xlab("t")
+```
+
+## Exercise 2.5
+Given the survivorship function:
+$$S(t) = exp(-t^\gamma) $$
+derive the probability density function and the hazard function.
+
+### Relationships
+We know that the cumulative Hazard function is the negative natural log of the survival function
+
+$$ H(t) =  -log(S(t))$$
+
+We know that the cumulative Hazard function is the integral of the hazard function
+
+$$ H(t) = \int_{0}^{t} h(x) dx $$
+$$H^\prime(t) = h(t)$$
+We also know that the probability density function can be derived as such
+
+$$f(t) = S(t) * h(t) $$
+
+### Deriving the cumulative hazard function
+
+
+$$ H(t) = -log(S(t))$$
+$$ H(t) = -log(exp(-t^\gamma))$$
+$$ H(t) = -(-t^\gamma) $$
+$$ H(t) = t^\gamma $$
+
+### Deriving the hazard function
+
+
+$$ H(t) = t^\gamma $$
+$$ \frac{dH(t)}{dt} = \frac{d}{dt}t^\gamma $$
+$$ H^\prime(t) = \gamma t^{\gamma -1} $$
+$$ h(t) = \gamma t^{\gamma -1} $$
+
+
+### Deriving the probability density function
+
+$$ f(t) = S(t) * h(t) $$
+$$ f(t) = exp(-t^\gamma) * \gamma t^{\gamma -1} $$
+$$ f(t) = \gamma * t^{\gamma - 1} * exp(-t^\gamma) $$
+

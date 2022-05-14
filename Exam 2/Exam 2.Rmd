@@ -1,0 +1,218 @@
+---
+title: "Exam 2"
+author: "Victor Feagins"
+date: "11/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival)
+library(dplyr)
+library(flextable)
+library(survival)
+library(ggplot2)
+library(ggfortify)
+library(magrittr)
+```
+
+```{r, include= FALSE}
+text <-"
+B	Censor	Time
+1	0	296.25
+2	0	209.82
+3	1	60.00
+4	0	72.03
+5	0	63.01
+6	0	32.77
+7	0	268.22
+8	0	394.06
+9	0	183.37
+10	0	248.77
+11	0	212.99
+12	1	350.00
+13	0	124.74
+14	1	90.00
+15	0	118.90
+16	0	186.17
+17	0	155.28
+18	0	67.78
+19	0	56.28
+20	0	153.74
+21	0	160.94
+22	0	285.40
+23	0	167.50
+24	0	250.13
+25	1	60.00
+26	0	172.58
+27	0	215.16
+28	1	140.00
+29	0	270.13
+30	0	227.56
+31	0	300.46
+32	0	321.05
+33	0	112.76
+34	0	200.39
+35	0	176.51
+36	0	50.22
+37	0	364.47
+38	0	262.83
+39	1	130.00
+40	0	315.42
+41	0	300.91
+42	0	199.57
+43	0	319.30
+44	0	130.05
+45	0	107.04
+46	0	231.08
+47	0	78.12
+48	0	207.09
+49	0	103.54
+50	0	187.47
+51	0	112.51
+52	0	300.00
+53	0	165.16
+54	0	131.63
+55	0	328.21
+56	0	60.27
+57	0	220.78
+58	0	361.87
+59	0	214.97
+60	0	119.45"
+df <- read.delim(text = text)
+rm(text)
+```
+
+
+### Part 1
+
+```{r}
+surv.1 <- Surv(df$Time, abs(df$Censor -1))
+```
+
+#### Plots
+
+```{r}
+km.fit <- survfit(surv.1 ~ 1, conf.type = "log-log")
+```
+
+##### Survival Function
+```{r}
+autoplot(km.fit, conf.int = F) +
+  labs(x = "Time",
+       y = "S(t)", 
+       title = "Kaplan Meier Survival Function")
+```
+
+##### Log Survival Function
+
+```{r}
+autoplot(km.fit, conf.int = F, fun = log) +
+  labs(x = "Time",
+       y = "ln(S(t))", 
+       title = "Kaplan Meier Log of Survival Function")
+```
+
+##### Log Survival Function
+```{r}
+autoplot(km.fit, conf.int = F, fun = function(x){log(-log(x))}) +
+  labs(x = "Time",
+       y = "ln(-ln(S(t)))", 
+       title = "Kaplan Meier log-negative-log of Survival Function")
+```
+
+##### Probability Density
+```{r}
+km.table <- broom::tidy(km.fit)
+
+km.table <- km.table %>% 
+  mutate(variance = estimate^2 * std.error^2)
+```
+
+```{r}
+survival.table1 <- km.table %>% filter(n.event > 0)
+survival.table1 <- survival.table1 %>% mutate(hazard = n.event / (n.risk * (lead(time) - time)))
+survival.table1 <- survival.table1 %>% mutate(probability  = estimate * hazard)
+ggplot() +
+  geom_line(data = survival.table1, aes(x = time, y = probability)) +
+  labs(x = "Time", y = "Probability Density")
+```
+
+##### Hazard function
+```{r}
+ggplot() +
+  geom_line(data = survival.table1, aes(x = time, y = hazard)) +
+  labs(x = "Time", y = "Hazard") +
+  theme_bw()
+```
+
+##### Mean And Median lifetimes
+
+```{r}
+print(km.fit, print.rmean = TRUE, r.mean = "common")
+```
+##### Computing S(60) & S(100)
+
+
+Computing S(60) and Variance of S(60)
+```{r}
+sliced.60 <- survival.table1 %>% 
+  filter(n.event == 1) %>% 
+  slice(which.min(abs(time - 60))-1, which.min(abs(time - 60))) # Grabs two points closes to t = 60
+
+sliced.60 %$% 
+  approx(time, estimate, xout =  60) #Does linear interpolation for s(60)
+
+sliced.60 %$%
+  approx(time, variance, xout =  60)
+```
+
+Computing S(100) and Variance of S(100)
+```{r}
+sliced.100 <- survival.table1 %>% 
+  slice(which.min(abs(time - 100))-1, which.min(abs(time - 100))) # Grabs two points closes to t = 100
+
+sliced.100 %$% 
+  approx(time, estimate, xout =  100) #Does linear interpolation for s(100)
+
+sliced.100 %$%
+  approx(time, variance, xout =  100)
+```
+
+
+#### Part 2
+
+```{r}
+wei.fit <- survreg(surv.1 ~ 1, dist = "weibull")
+summary(wei.fit)
+```
+
+```{r}
+lognormal.fit <- survreg(surv.1 ~ 1, dist = "lognormal")
+summary(lognormal.fit)
+```
+
+```{r}
+loglog.fit <- survreg(surv.1 ~ 1, dist = "loglogistic")
+summary(loglog.fit)
+```
+##### Comparing Likelihood
+```{r}
+rbind(c("Weibull", -2 * wei.fit$loglik[1]),
+      c("Lognormal", -2 * lognormal.fit$loglik[1]),
+      c("Log-Logistic", -2 * loglog.fit$loglik[1]))
+
+```
+
+#### Probability Plots
+Still a work in progress
+```{r}
+test <- MASS::fitdistr(df$Time, "weibull")
+n <- nrow(df)
+p <- (1 : n) / n - 0.5 / n #This is the assocated Cumilated dis for the sorted values of x
+
+ggplot(df) + 
+  geom_point(aes(x = p, y = sort(pweibull(Time, test$estimate[1], test$estimate[2])))) +
+  labs(x = The)
+```
+

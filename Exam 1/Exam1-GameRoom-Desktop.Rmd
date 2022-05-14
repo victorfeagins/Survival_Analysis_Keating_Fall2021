@@ -1,0 +1,260 @@
+---
+title: "Exam 1"
+author: "Victor Feagins"
+date: "10/4/2021"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+library(dplyr) 
+library(survival)
+library(flextable)
+library(ggplot2)
+library(ggfortify)
+library(magrittr)
+theme_set(theme_bw()) #Make ggplots black and white theme
+```
+
+## Question 1
+Consider the mortality table based on 608 known deaths of Dall Mountain Sheep. The data are expressed per 1,000 sheep on the table below
+
+```{r Data.1, include = FALSE}
+#Getting data from a pdf to dataframe in R
+rd <-  c("0 1 1,000 199 1 2 801 12 2 3 789 13 3 4 776 12 4 5 764 30 5 6 734 46 6 7 688 48 7 8 640 69 8 9 571 132 9 10 439 187 10 11 252 156 11 12 96 90 12 13 6 3 13 14 3 3")
+
+df.1 <- read.table(text = rd, sep = " ",
+           col.names = c("Start_Interval", "End_Interval", "Number_Of_Survivors", "Number_of_Deaths"))
+df.1$Number_Of_Survivors = as.numeric(gsub(",","",df.1$Number_Of_Survivors))
+
+rm(rd) #I don't need the raw data anymore
+```
+
+```{r Flex.1, echo=FALSE}
+df.1 %>% 
+  flextable() %>% 
+  set_caption("Dall Mountain Sheep Deaths In Intervals")
+```
+
+### Compute and plot the Survival Function
+
+```{r, include=FALSE}
+df.1 <- df.1 %>% 
+  mutate(Midtime = rowMeans(cbind(End_Interval, Start_Interval)))
+duptimes <- df.1$Number_of_Deaths
+rid <- rep(1:nrow(df.1), duptimes)
+
+df.1.t <- df.1[rid,]
+```
+
+```{r}
+Surv.1 <- Surv(time = df.1.t$Start_Interval, 
+     time2 = df.1.t$End_Interval, 
+     event = rep(1, nrow(df.1.t)),
+     type = "interval")
+
+summary(fit.1 <- survfit(Surv.1~1))
+```
+```{r, echo = FALSE}
+autoplot(fit.1, conf.int = F) +
+  labs(title = "Survival Probability of Dall Mountain Sheep",
+       x = "Time",
+       y = "Survival Probability")
+```
+
+### Compute and plot the Probability  Function
+```{r}
+df.1 <- df.1 %>% 
+  mutate("f(t)" = Number_of_Deaths/(max(Number_Of_Survivors) * (End_Interval - Start_Interval)))
+```
+
+```{r, echo = FALSE}
+df.1 %>% 
+  select(Midtime, `f(t)`) %>% 
+  flextable() %>% 
+  set_caption("Probability Density Function Calcuated at the Middle of the Interval")
+
+```
+
+```{r, echo=FALSE}
+ggplot(df.1, aes(x = Midtime, y = `f(t)`)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Probablity Density Curve  of Dall Mountain Sheep",
+       x = "Years",
+       y = "Probability Density")
+```
+
+
+### Compute and plot the Hazard Function
+```{r}
+df.1 <- df.1 %>% 
+  mutate(Deaths_Per_Time = Number_of_Deaths/(End_Interval - Start_Interval),
+         "h(t)" = Deaths_Per_Time/(Number_Of_Survivors - Number_of_Deaths/2))
+```
+```{r, echo = FALSE}
+df.1 %>% 
+  select(Midtime, `h(t)`) %>% 
+  flextable() %>% 
+  set_caption("Hazard Function Calcuated at the Middle of the Interval")
+```
+
+```{r, echo=FALSE}
+ggplot(df.1, aes(x = Midtime, y = `h(t)`)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Hazard Function of Dall Mountain Sheep",
+       x = "Years",
+       y = "Hazard Function")
+
+```
+
+### Discussing the Hazard Function
+
+Looking at the hazard function we see that the first value is high possible indicating infant mortality. After the sheep lives past this point the hazard function increases over time typical behavior for life span which according to the [National Park Service](https://www.nps.gov/articles/about-dall-sheep.htm) is 12 to 16 years. No sheep in our sample lived to 16 years I suspect this is due to how the sample was collected. Is is unlikely that humans were recording when the sheep were born and more likely they caught young sheep and kept up with them in the wild. It might be possible that the sheep dying at 13 years might be 16 years old. This hypothesis would explain the low initial hazard function because death at births are not captured.
+
+### Mean and Median Survival Times
+
+```{r}
+print(fit.1, print.rmean = TRUE)
+```
+
+We see that the mean survival time is 6.559 years and the median 8 years
+
+
+
+## Question 2 {#Q2}
+Consider the remission data of 40 female patients diagnosed with breast cancer in a certain hospital during the years 1989–93. The data include: the age of the patient as of last contact (follow up/death), stage of cancer at time of diagnosis, date of last contact, status (alive/dead), the number of days lived, the number of years lived. The data are given on the following page.
+```{r, include= FALSE}
+rd <- "1 39 1 02/01/89 10/23/92 A 1360 3.723 2 55 1 03/22/89 02/12/95 A 2153 5.895 3 56 2 04/16/89 09/05/89 D 142 0.389 4 63 1 05/23/89 12/20/92 D 1307 3.578 5 62 2 06/12/89 12/28/95 A 2390 6.543 6 42 2 09/05/89 12/17/90 A 468 1.281 7 45 1 10/05/89 08/04/95 A 2129 5.829 8 38 2 11/30/89 11/10/91 D 710 1.944 9 53 2 01/07/90 10/25/90 D 291 0.797 10 55 1 02/03/90 01/31/91 D 362 0.991 11 49 2 03/23/90 08/29/92 A 890 2.437 12 61 1 04/28/90 05/13/94 A 1476 4.041 13 58 1 05/14/90 06/01/90 A 18 0.049 14 45 2 07/15/90 09/10/93 D 1153 3.157 15 60 2 08/03/90 11/27/94 A 1577 4.318 16 69 1 08/31/90 10/06/95 D 1862 5.098 17 58 2 09/18/90 01/02/93 D 837 2.292 18 54 2 11/09/90 06/18/95 A 1682 4.605 19 56 2 11/28/90 06/27/95 D 1672 4.578 20 52 1 12/12/90 05/13/95 D 1613 4.416 21 67 2 01/24/91 12/23/94 D 1429 3.912 22 64 2 02/17/91 06/09/94 D 1208 3.307 23 73 1 04/21/91 12/24/93 A 978 2.678 24 48 2 06/09/91 06/26/94 A 1113 3.047 25 42 2 06/20/90 03/15/92 D 634 1.736 26 56 2 08/25/90 08/19/94 A 1455 3.984 27 43 1 03/01/92 06/06/94 D 827 2.264 28 64 2 04/12/92 02/13/95 D 1037 2.839 29 35 2 04/13/92 04/15/94 D 732 2.004 30 77 1 05/05/92 05/10/95 A 1100 3.012 31 59 2 08/10/92 11/08/92 D 90 0.246 32 68 1 10/13/92 10/21/93 D 373 1.021 33 70 1 11/10/92 12/20/95 A 1135 3.107 34 58 1 01/17/93 10/29/94 A 650 1.780 35 75 2 02/02/93 03/10/94 D 401 1.098 36 55 2 02/03/93 09/29/93 D 238 0.652 37 45 1 05/11/93 07/02/94 D 417 1.142 38 69 1 11/19/93 05/26/95 A 553 1.514 39 70 1 07/12/93 05/27/95 A 684 1.873 40 27 1 12/13/93 06/03/95 A 537 1.470"
+
+df.2 <- read.table(text = rd, sep = " ",
+           col.names = c("ID", "Age", "Stage", "Diagnosis", "Last", "Status", "Days", "Years"))
+
+rm(rd)
+```
+
+```{r, echo = FALSE}
+df.2 %>% 
+  head(10) %>% 
+  flextable() %>%
+  set_caption("First 10 Female Patients diagnosed with Breast Cancer")
+```
+
+Compute and plot the PL estimates of S(t) at every time to death for the Stage 1 and 2 groups.
+```{r, include = FALSE}
+df.2 <- df.2 %>% 
+  mutate(Status.l = (Status == "D"))
+```
+
+```{r}
+Surv.2 <- Surv(df.2$Years, df.2$Status.l)
+fit.2 <- survfit(Surv.2 ~ Stage, data = df.2 , robust = TRUE)
+summary(fit.2)
+```
+
+
+## Comparing Survival Functions {#Compare}
+```{r plots, echo = FALSE}
+autoplot(fit.2, conf.int = FALSE) +
+    labs(title = "Survival Probablity by Cancer Stage",
+       x = "Years",
+       y = "Survival Probability",
+       colour = "Stage")
+```
+
+```{r}
+survdiff(Surv.2 ~ Stage, data = df.2) 
+```
+
+Doing a log rank test we see the curves are significantly different at the .1 level but not at the .05 level. Looking at the curves we see that stage 2 had a smaller survival curve throughout time which makes practical sense since stage 2 cancer is more intense then stage 1. 
+
+## Compute the survival function and the variance
+
+To calculate Survival and variance at a particular point we will linearly interpolate the points closest to the point at interest that have had events. 
+
+
+For the variance of S(t) We can use Greenwood's Formula
+
+$$\widehat{Var}[\hat{S}(t)] = \hat{S}(t)^2 \sum_{t_i \leq t}\frac{d_i}{r_i(r_i - d_i)} $$
+Where $r_i$ is the number at risk right before $t$ and $d_i$ is the number of deaths occurred at time $t$
+
+```{r}
+fit.df.2 <- broom::tidy(fit.2)
+fit.df.2 <- fit.df.2 %>% 
+  group_by(strata) %>% 
+  mutate(variance = estimate^2 * cumsum(n.event/(n.risk * (n.risk - n.event)))) %>% #Estimating the variance 
+  ungroup()
+```
+
+```{r, echo = FALSE}
+fit.df.2 %>% 
+  select(time, estimate, strata, variance) %>% 
+  flextable() %>% 
+  set_caption("Variance Estimate of Cancer Patients")
+```
+
+
+
+### At S(2) for stage 1 patients
+
+```{r, include=FALSE}
+sliced.2 <- fit.df.2 %>% 
+  filter(strata == "Stage=1", n.event == 1) %>% 
+  slice(which.min(abs(time - 2))-1, which.min(abs(time - 2))) # Grabs two points closes to t = 2
+```
+
+
+```{r}
+s.2<- sliced.2 %$% 
+  approx(time, estimate, 2)$y #Does linear interpolation for s(2)
+v.2 <- sliced.2 %$%
+  approx(time, variance, 2)$y #Does linear interpolation for var(s(2))
+```
+
+Using the linear interpolation at $S(2)$ we get a value of `r round(s.2,4)` and a variance of `r round(v.2,4)`
+
+
+### At S(3) for stage 2 patients
+
+```{r, include=FALSE}
+sliced.3 <- fit.df.2 %>% 
+  filter(strata == "Stage=2", n.event == 1) %>% 
+  slice(which.min(abs(time - 3))-1, which.min(abs(time - 3))) # Grabs two points closes to t = 3
+```
+
+
+```{r}
+s.3<- sliced.3 %$% 
+  approx(time, estimate, 3)$y #Does linear interpolation for s(2)
+v.3 <- sliced.3 %$%
+  approx(time, variance, 3)$y #Does linear interpolation for var(s(2))
+
+```
+
+Using the linear interpolation at $S(3)$ we get a value of `r round(s.3,4)` and a variance of `r round(v.3,4)`.
+
+
+### What is the Median Remission Times
+
+```{r}
+print(fit.2)
+```
+
+We see that for that the median survival time of Stage 1 is 4.42 years and the median survival time of Stage 2 is 3.16
+
+
+## Question 3
+Using the data in problem, Q2, is there a difference in the survival functions by stage of cancer assessed at the time of diagnosis?
+
+In [Question 2](#Q2) we examined the differences between the 2 survival functions of cancer patients at different stages of cancer. Conceptually we would imagine that the stage 2 cancer patients would have a greater risk of death since stage 2 cancer is greater intensity then stage 1. 
+```{r, echo = FALSE}
+fit.2
+```
+When simply looking at the descriptive statistics of we see that the stage 1 had 7 deaths while stage 2 had 14 deaths. With comparable sample sizes. The stage 1 median is also less then the median of stage 2 patients. We examine the survival curves [plots](#Compare) we see that stage 2 patients have a lower survival curve through out the time domain. When doing the statistical test to see if the groups are different we have significance at the .1 level. In conclusion it is fair to say that stage 1 cancer patients survive longer then stage 2 patients.
+
+
+

@@ -1,0 +1,29 @@
+---
+title: "CoxPh"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr) 
+library(survival)
+library(flextable)
+library(ggplot2)
+library(ggfortify)
+```
+
+
+```{r}
+df <- read.csv("Myeloma.csv")
+
+```
+
+```{r}
+Surv(df$Time, df$VStatus)
+```
+#Regression
+
+```{r}
+
+```
+

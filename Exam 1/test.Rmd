@@ -1,0 +1,11 @@
+---
+title: "test"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+```{python}
+print("1")
+```
+
